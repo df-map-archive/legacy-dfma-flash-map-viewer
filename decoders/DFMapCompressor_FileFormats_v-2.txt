@@ -1,0 +1,84 @@
+This is a summary of the file formats created by different versions of SL's DF Map Compressor.
+This summary is used for inline comments in the DF Map Viewer's DFMapDecoder class. 
+
+See http://shadowlord13.googlepages.com/DFMapViewer_FileFormat_2.txt for source reference.
+
+Dwarf Fortress Map Archive:
+http://mkv25.net/dfma/
+
+Document version -2, to reflect version -2 of the file format.
+- Markavian
+
+/* Version 0 FDF-Maps:
+	Int32 numberOfTiles (Number of unique tile images - not the total number of tiles in the map)
+	Int32 tileWidth (width of each tile in pixels)
+	Int32 tileHeight (height of each tile in pixels)
+	
+	Int32 mapWidthInTiles (number of columns of tiles in the map)
+	Int32 mapHeightInTiles (number of rows of tiles in the map)
+		
+	For each unique tile image:
+		A sequence of values repeated:
+			UInt8 numberOfPixels
+			UInt8 blue
+			UInt8 green
+			UInt8 red
+			
+	For each map layer (again):
+		For each tile on the map layer (mapLayerWidthInTiles * mapLayerHeightInTiles):
+			VarSize tileImageIndex (the first tile in the index read is index 0)
+*/
+
+/* Version -1 FDF-Maps:
+	Int32 negativeVersion (this would be -1 for the new multi-layer-supporting format, or >=0 for the previous format, which doesn't support multi-layer images. For the doc on the previous format, see DFMapViewer_FileFormat.txt (this is DFMapViewer_FileFormat_2.txt. Note that this variable is numberOfTiles in the old format, and is guaranteed to be >=0 in it.))
+	Int32 numberOfTiles (Number of unique tile images - not the total number of tiles in the map)
+	Int32 tileWidth (width of each tile in pixels)
+	Int32 tileHeight (height of each tile in pixels)
+
+	Int32 numMapLayers (how many map layers are in the image - for an old DF image, this would be one)
+
+	For each map layer:
+		Int32 mapLayerDepth (This may change, but I'm thinking 0 would be the ground layer, and higher (towards the sky) layers (if any) would have positive numbers, and lower (deeper) layers would have negative numbers - higher numbers are higher altitude, lower numbers are lower altitude.)
+		Int32 mapLayerWidthInTiles (number of columns of tiles in this map layer)
+		Int32 mapLayerHeightInTiles (number of rows of tiles in this map layer)
+		
+	For each unique tile image:
+		A sequence of values repeated:
+			UInt8 numberOfPixels
+			UInt8 blue
+			UInt8 green
+			UInt8 red
+
+	For each map layer (again):
+		For each tile on the map layer (mapLayerWidthInTiles * mapLayerHeightInTiles):
+			VarSize tileImageIndex (the first tile in the index read is index 0)
+*/
+
+/* Version -2 FDF-Maps:
+	Int32 negativeVersion (will be -2 if font/color information is included for the unique tile images)
+	Int32 numberOfTiles (Number of unique tile images - not the total number of tiles in the map)
+	Int32 tileWidth (width of each tile in pixels)
+	Int32 tileHeight (height of each tile in pixels)
+
+	Int32 numMapLayers (how many map layers are in the image - for an old DF image, this would be one)
+
+	For each map layer:
+		Int32 mapLayerDepth (This may change, but I'm thinking 0 would be the ground layer, and higher (towards the sky) layers (if any) would have positive numbers, and lower (deeper) layers would have negative numbers - higher numbers are higher altitude, lower numbers are lower altitude.)
+		Int32 mapLayerWidthInTiles (number of columns of tiles in this map layer)
+		Int32 mapLayerHeightInTiles (number of rows of tiles in this map layer)
+
+	For each unique tile image:
+		UInt8 characterCode - 0 is the one in the upper-left of the font bmp. 1 is one to the right. 2 is the next one to the right. The first character in the second row is 16 (the first row was 0), etc.
+		UInt8 backgroundColor
+		UInt8 foregroundColor
+
+		A sequence of values repeated:
+			UInt8 numberOfPixels
+			UInt8 blue
+			UInt8 green
+			UInt8 red
+
+	For each map layer (again):
+		For each tile on the map layer (mapLayerWidthInTiles * mapLayerHeightInTiles):
+			VarSize tileImageIndex (the first tile in the index read is index 0)
+*/
