@@ -1,0 +1,96 @@
+This is a summary of the file formats created by different versions of SL's DF Map Compressor.
+This summary is used for inline comments in the DF Map Viewer's DFMapDecoder class. 
+
+See http://shadowlord13.googlepages.com/DFMapViewer_FileFormat_extended.txt
+
+Dwarf Fortress Map Archive:
+http://mkv25.net/dfma/
+
+Document version -8, to reflect version -8 features of the file format.
+- Markavian
+
+/* FDF-Map file format:
+	
+Int32 negativeVersion 
+
+	Positive for version 0 maps - skip to numberOfTiles 
+
+	negativeVersion is -1 for no features
+	negativeVersion is < -1 for Feature Bit Flags:
+		featureBitFlags is -1 - negativeVersion:
+			0x01:	<TileID>    information (Information on Font/color)
+			0x02:	<RLE>       information in map indices
+
+			Int32 numberOfTiles (number of unique tile images - not the total number of tiles in the map)
+			Int32 tileWidth     (width of each tile in pixels)
+			Int32 tileHeight    (height of each tile in pixels)
+
+Int32 numMapLayers  (how many map layers are in the image - for an old DF image, this would be one)
+
+For each map layer description until numMapLayers:
+	Int32 mapLayerDepth          (map depth as encoded in DF exported bmp file names)
+	Int32 mapLayerWidthInTiles   (number of columns of tiles in current map layer, including columns which were clipped)
+	Int32 mapLayerHeightInTiles  (number of rows of tiles in current map layer, including rows which were clipped)
+
+End of map layer descriptions.
+	
+For each unique tile image:
+	<TileID>
+		UInt8 characterCode - 0 is the one in the upper-left of the font bmp, going from left-right, top-bottom, 255 is the bottom right
+		UInt8 backgroundColor
+		UInt8 foregroundColor
+		
+		If fontCharacter, bgcolor, fgcolor are 0xFF, 0xFF, 0xFF
+Then the tile did not match any known tile combination
+
+	</TileID>
+	
+	A sequence of values repeated using RLE:
+		UInt8 numberOfPixels
+		UInt8 blue
+		UInt8 green
+		UInt8 red
+		
+End of unique tile images.
+		
+For each map layer (again):
+	NumTilesWide is MapLayerWidthInTiles
+	NumTilesHigh is MapLayerHeightInTiles
+
+	<RLE>
+	A sequence of tiles repeated using RLE:
+
+	Repeated many times:
+		VarSize tileIndexAndFlag
+		
+		VarSize and Flag depend on the value of numberOfTiles:
+			If it is 127 or less, then VarSize is a UInt8 and Flag is 0x80.
+			If not, if it is 32767 or less, then VarSize is a UInt16 and Flag is 0x8000.
+			If not, then VarSize is a UInt32 and Flag is 0x80000000.
+		
+		<Flag>
+			tileImageIndex is tileIndexAndFlag - Flag
+			Uint8 rleTiles
+		</Flag>
+
+		<NoFlag>
+			tileImageIndex is tileIndexAndFlag
+		</NoFlag>
+	</RLE>
+	
+	<NotRLE>
+		VarSize tileImageIndex (the first image read was index 0)
+		
+		VarSize depends on the value of numberOfTiles:
+			If it is 255 or less, then VarSize is a UInt8.
+			If not, if it is 65535 or less, then VarSize is a UInt16.
+			If not, then VarSize is a UInt32.
+	
+		For each column until NumTilesWide
+			For each row until NumTilesHigh
+				VarSize tileImageIndex
+	</NotRLE>
+	
+End of map layers.
+
+*/
